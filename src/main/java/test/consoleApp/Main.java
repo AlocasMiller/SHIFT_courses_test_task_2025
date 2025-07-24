@@ -59,18 +59,19 @@ public class Main {
 
             String statisticType = params.statisticType();
 
-            writeResults(params, resultIntegers, "integers");
-            writeResults(params, resultFloats, "floats");
-            writeResults(params, resultStrings, "strings");
+            writeResult(params, resultIntegers, "integers");
+            writeResult(params, resultFloats, "floats");
+            writeResult(params, resultStrings, "strings");
 
-            if (!resultIntegers.isEmpty() && !resultFloats.isEmpty() && !resultStrings.isEmpty()) {
-                System.out.println("Statistics:");
+            if (!resultIntegers.isEmpty() || !resultFloats.isEmpty() || !resultStrings.isEmpty()) {
+                System.out.println("Statistics: ");
             }
             new StatisticInt().printStatistic(resultIntegers, statisticType);
             new StatisticFloat().printStatistic(resultFloats, statisticType);
             new StatisticString().printStatistic(resultStrings, statisticType);
+            System.exit(0);
         } catch (Exception ex) {
-            System.out.println("Error. Error message: " + ex.getMessage());
+            System.out.println("Unexpected error occurred: " + ex.getMessage());
             System.exit(3);
         }
     }
@@ -109,7 +110,7 @@ public class Main {
         }
     }
 
-    private static void writeResults(Params params, List<String> result, String resultType) {
+    private static void writeResult(Params params, List<String> result, String resultType) {
         if (!result.isEmpty()) {
             boolean append = params.aEnabled();
             String prefix = "\\" + params.pAvailable();
