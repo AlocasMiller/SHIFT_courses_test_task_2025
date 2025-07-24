@@ -1,5 +1,7 @@
 package test.consoleApp;
 
+import org.apache.commons.cli.ParseException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -10,137 +12,84 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class Main {
-    static Path basePath = Paths.get("src\\main\\java\\test\\consoleApp");
+    private static final Path basePath = Paths.get("src\\main\\java\\test\\consoleApp");
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("^-?\\d*_?\\d+$");
+    private static final Pattern FLOAT_PATTERN = Pattern.compile("^(-?\\d+\\.?\\d*E?-?\\d+)$");
 
     public static void main(String[] args) {
-        LinkedList<String> filesToRead = new LinkedList<>();
-
-        String statisticType = null;
-        boolean append = false;
-        String o = "";
-        String p = "";
-
-        for (int i = 0; i < args.length; i++) {
-            switch (args[i]) {
-                case "-s", "-f":
-                    statisticType = args[i];
-                    break;
-                case "-a":
-                    append = true;
-                    break;
-                case "-o":
-                    if (i + 1 < args.length) {
-                        o = args[++i];
-                    } else {
-                        System.out.println("Ошибка: отсутствует значение после -o");
-                        System.exit(0);
-                    }
-                    break;
-                case "-p":
-                    if (i + 1 < args.length) {
-                        p = args[++i];
-                    } else {
-                        System.out.println("Ошибка: отсутствует значение после -p");
-                        System.exit(0);
-                    }
-                    break;
-                default:
-                    filesToRead.add(args[i]);
-            }
+        Params params = null;
+        try {
+            params = ParamsParser.parseArgs(args);
+        } catch (ParseException ex) {
+            System.exit(3);
         }
 
-        if (statisticType == null) {
-            System.out.println("Ошибка: выберите вид отображения статистики");
-            System.exit(0);
-        }
-
-        if (filesToRead.isEmpty()) {
-            System.out.println("Ошибка: отсутствуют входные файлы");
-            System.exit(0);
-        }
-
-        List<BufferedReader> readers = new ArrayList<>();
+        List<String> resultStrings = new ArrayList<>();
+        List<String> resultIntegers = new ArrayList<>();
+        List<String> resultFloats = new ArrayList<>();
 
         try {
-            for (String filePath : filesToRead) {
-                File file = new File(basePath + "\\" + filePath);
+            for (Path filePath : params.fileList()) {
+                String pathString = basePath.resolve(filePath).toString();
+                File file = new File(pathString);
                 if (!file.exists()) {
-                    System.out.println("Ошибка: файла по пути " + basePath + "\\" + filePath + " не существует");
-                    System.exit(0);
+                    System.out.println("Error: file on the path " + pathString + " does not exist");
+                    System.exit(2);
                 }
-                readers.add(new BufferedReader(new FileReader(file, StandardCharsets.UTF_8)));
-            }
-
-            LinkedList<String> resultStrings = new LinkedList<>();
-            LinkedList<String> resultIntegers = new LinkedList<>();
-            LinkedList<String> resultFloats = new LinkedList<>();
-
-            Pattern patternInt = Pattern.compile("^-?\\d*_?\\d+$");
-            Pattern patternFloat = Pattern.compile("^(-?\\d+\\.?\\d*E?-?\\d+)$");
-
-            boolean hasNextLine = true;
-            while (hasNextLine) {
-                hasNextLine = false;
-                for (BufferedReader reader : readers) {
-                    String line = reader.readLine();
-                    if (line != null) {
-                        if (patternInt.matcher(line).matches()) {
+                try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (INTEGER_PATTERN.matcher(line).matches()) {
                             resultIntegers.add(line);
-                        } else if (patternFloat.matcher(line).matches()) {
+                        } else if (FLOAT_PATTERN.matcher(line).matches()) {
                             resultFloats.add(line);
                         } else {
                             resultStrings.add(line);
                         }
-                        hasNextLine = true;
                     }
+                } catch (IOException ex) {
+                    System.out.println("Error. Error message: " + ex.getMessage());
+                    System.exit(3);
                 }
             }
 
-            System.out.println("Статистика: ");
-            if (!resultIntegers.isEmpty()) {
-                checkDir(o);
-                createFile(Path.of(basePath + "\\" + o + "\\" + p + "integers.txt"), resultIntegers, append);
-                StatisticInt statisticInt = new StatisticInt();
-                statisticInt.printStatistic(resultIntegers, statisticType);
+            String statisticType = params.statisticType();
+
+            writeResult(params, resultIntegers, "integers");
+            writeResult(params, resultFloats, "floats");
+            writeResult(params, resultStrings, "strings");
+
+            if (!resultIntegers.isEmpty() || !resultFloats.isEmpty() || !resultStrings.isEmpty()) {
+                System.out.println("Statistics: ");
             }
-            if (!resultFloats.isEmpty()) {
-                checkDir(o);
-                createFile(Path.of(basePath + "\\" + o + "\\" + p + "floats.txt"), resultFloats, append);
-                StatisticFloat statisticFloat = new StatisticFloat();
-                statisticFloat.printStatistic(resultFloats, statisticType);
-            }
-            if (!resultStrings.isEmpty()) {
-                checkDir(o);
-                createFile(Path.of(basePath + "\\" + o + "\\" + p + "strings.txt"), resultStrings, append);
-                StatisticString statisticStrings = new StatisticString();
-                statisticStrings.printStatistic(resultStrings, statisticType);
-            }
-        } catch (Exception e) {
-            System.out.println("Ошибка. Сообщение ошибки: " + e.getMessage());
+            new StatisticInt().printStatistic(resultIntegers, statisticType);
+            new StatisticFloat().printStatistic(resultFloats, statisticType);
+            new StatisticString().printStatistic(resultStrings, statisticType);
             System.exit(0);
+        } catch (Exception ex) {
+            System.out.println("Unexpected error occurred: " + ex.getMessage());
+            System.exit(3);
         }
     }
 
-    public static void checkDir(String o) {
-        if (!o.isEmpty()) {
-            String pathToFolder = basePath + "\\" + o;
-            File folder = new File(pathToFolder);
+    private static void checkDir(Path path) {
+        if (path != null) {
+            File folder = new File(path.toString());
             if (!folder.exists()) {
                 boolean dir = folder.mkdirs();
                 if (!dir) {
-                    System.out.println("Ошибка: папка не создана.");
-                    System.exit(0);
+                    System.out.println("Error: the folder was not created");
+                    System.exit(2);
                 }
             }
         }
     }
 
-    public static void createFile(Path path, LinkedList<String> result, boolean append) {
+    private static void createFile(Path path, List<String> result, boolean append) {
         try {
             if (append) {
                 Files.write(
@@ -155,9 +104,22 @@ public class Main {
                         result
                 );
             }
-        } catch (IOException e) {
-            System.out.println("Ошибка: файл не создан. Сообщение ошибки: " + e.getMessage());
-            System.exit(0);
+        } catch (IOException ex) {
+            System.out.println("Error: the file was not created. Error message: " + ex.getMessage());
+            System.exit(3);
+        }
+    }
+
+    private static void writeResult(Params params, List<String> result, String resultType) {
+        if (!result.isEmpty()) {
+            boolean append = params.aEnabled();
+            String prefix = "\\" + params.pAvailable();
+            Path outputDir = basePath.resolve(
+                    params.oAvailable().replaceFirst("^/+", "")
+            );
+
+            checkDir(outputDir);
+            createFile(Path.of(outputDir + prefix + resultType + ".txt"), result, append);
         }
     }
 }

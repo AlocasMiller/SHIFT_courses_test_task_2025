@@ -1,15 +1,18 @@
 package test.consoleApp;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public class StatisticInt extends Statistic {
 
     @Override
-    public void printStatistic(LinkedList<String> result, String statisticType) {
-        System.out.println("\nСтатистика для целых чисел");
-        System.out.println("Количество записанных элементов: " + result.size());
+    public void printStatistic(List<String> result, String statisticType) {
+        if (result.isEmpty()) {
+            return;
+        }
+        System.out.println("\nStatistics for integers");
+        System.out.println("Number of recorded items: " + result.size());
 
-        if (statisticType.equals("-f")) {
+        if (statisticType.equals("full")) {
             long min = Long.MAX_VALUE;
             long max = Long.MIN_VALUE;
             double sum = 0;
@@ -24,10 +27,10 @@ public class StatisticInt extends Statistic {
                 sum += Double.parseDouble(str);
             }
 
-            System.out.println("Минимальное значение: " + min);
-            System.out.println("Максимальное значение: " + max);
-            System.out.println("Сумма: " + sum);
-            System.out.println("Среднее значение: " + sum/result.size());
+            System.out.println("Minimum value: " + min);
+            System.out.println("Maximum value: " + max);
+            System.out.println("The amount: " + sum);
+            System.out.println("The average value: " + sum/result.size());
         }
     }
 }

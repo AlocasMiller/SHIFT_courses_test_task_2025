@@ -1,8 +1,7 @@
 package test.consoleApp;
 
-import java.util.LinkedList;
+import java.util.List;
 
 public abstract class Statistic {
-    public void printStatistic(LinkedList<String> result, String statisticType) {}
+    public void printStatistic(List<String> result, String statisticType) {}
 }
-
