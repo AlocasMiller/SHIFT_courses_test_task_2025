@@ -2,9 +2,12 @@
 Версия Java: 23    
 Версия Gradle: corretto-21
 
+#### Сторонние библиотеки
+commons-cli:commons-cli:1.9.0
+
 #### Инструкция по запуску:
 В терминале, находясь в папке проекта, проделать следующие шаги
-1. ``` javac -d out src/main/java/test/consoleApp/*.java ```
+1. ``` javac -cp libs/* -d out src/main/java/test/consoleApp/*.java ```
 2. ``` jar cfm util.jar manifest.txt -C out . ```
 3. ``` java -jar util.jar -f -a -o /some/path -p result_ in1.txt in2.txt in3.txt ```
 
@@ -23,4 +26,4 @@
 Включается при добавлении опции -a. По умолчанию файлы перезаписываются
 
 ##### Входные файлы
-Входными фалйами считается все, что идет без указания опции
+Входными файлами считается все, что идет без указания опции
