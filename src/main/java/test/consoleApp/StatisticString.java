@@ -6,14 +6,14 @@ import java.util.Optional;
 public class StatisticString extends Statistic {
     
     @Override
-    public void printStatistic(List<String> result, String statisticType) {
+    public void printStatistic(List<String> result, StatisticType statisticType) {
         if (result.isEmpty()) {
             return;
         }
         System.out.println("\nStatistics for strings");
         System.out.println("Number of recorded items: " + result.size());
 
-        if (statisticType.equals("full")) {
+        if (statisticType.equals(StatisticType.FULL)) {
             Optional<String> shortest = result.stream()
                     .min((s1, s2) -> Integer.compare(s1.length(), s2.length()));
             Optional<String> longest = result.stream()

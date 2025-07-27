@@ -21,7 +21,7 @@ public class ParamsParser {
                 .map(Paths::get)
                 .toList();
         return new Params(
-                commandLine.hasOption("f") ? "full" : "short",
+                commandLine.hasOption("f") ? StatisticType.FULL : StatisticType.SHORT,
                 commandLine.hasOption("a"),
                 Objects.requireNonNullElse(commandLine.getOptionValue("o"), ""),
                 Objects.requireNonNullElse(commandLine.getOptionValue("p"), ""),
@@ -45,13 +45,13 @@ public class ParamsParser {
             if (commandLine.getArgList().isEmpty())
                 throw new ParseException("Not enough files specified");
             return commandLine;
-        } catch (ParseException e) {
+        } catch (ParseException ex) {
             if (args.length > 1) {
-                System.out.println(e.getMessage());
+                System.out.println(ex.getMessage());
             } else new HelpFormatter().printHelp("""
                 Args: (-f|-s) [-a] [-o /some/path] [-p result_] in1.txt
                     in1.txt - some file with data""", options);
-            throw e;
+            throw ex;
         }
     }
 }

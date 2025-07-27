@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 public record Params(
-        String statisticType,
+        StatisticType statisticType,
         boolean aEnabled,
         String oAvailable,
         String pAvailable,

@@ -20,12 +20,16 @@ public class Main {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("^-?\\d*_?\\d+$");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("^(-?\\d+\\.?\\d*E?-?\\d+)$");
 
+    private static final int EXIT_SUCCESS = 0;
+    private static final int EXIT_PROCESSING_ERROR = 2;
+    private static final int EXIT_EXCEPTION = 3;
+
     public static void main(String[] args) {
         Params params = null;
         try {
             params = ParamsParser.parseArgs(args);
         } catch (ParseException ex) {
-            System.exit(3);
+            System.exit(EXIT_EXCEPTION);
         }
 
         List<String> resultStrings = new ArrayList<>();
@@ -38,7 +42,7 @@ public class Main {
                 File file = new File(pathString);
                 if (!file.exists()) {
                     System.out.println("Error: file on the path " + pathString + " does not exist");
-                    System.exit(2);
+                    System.exit(EXIT_PROCESSING_ERROR);
                 }
                 try (BufferedReader reader = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
                     String line;
@@ -53,11 +57,11 @@ public class Main {
                     }
                 } catch (IOException ex) {
                     System.out.println("Error. Error message: " + ex.getMessage());
-                    System.exit(3);
+                    System.exit(EXIT_EXCEPTION);
                 }
             }
 
-            String statisticType = params.statisticType();
+            StatisticType statisticType = params.statisticType();
 
             writeResult(params, resultIntegers, "integers");
             writeResult(params, resultFloats, "floats");
@@ -69,10 +73,10 @@ public class Main {
             new StatisticInt().printStatistic(resultIntegers, statisticType);
             new StatisticFloat().printStatistic(resultFloats, statisticType);
             new StatisticString().printStatistic(resultStrings, statisticType);
-            System.exit(0);
+            System.exit(EXIT_SUCCESS);
         } catch (Exception ex) {
             System.out.println("Unexpected error occurred: " + ex.getMessage());
-            System.exit(3);
+            System.exit(EXIT_EXCEPTION);
         }
     }
 
@@ -83,7 +87,7 @@ public class Main {
                 boolean dir = folder.mkdirs();
                 if (!dir) {
                     System.out.println("Error: the folder was not created");
-                    System.exit(2);
+                    System.exit(EXIT_PROCESSING_ERROR);
                 }
             }
         }
@@ -106,7 +110,7 @@ public class Main {
             }
         } catch (IOException ex) {
             System.out.println("Error: the file was not created. Error message: " + ex.getMessage());
-            System.exit(3);
+            System.exit(EXIT_EXCEPTION);
         }
     }
 

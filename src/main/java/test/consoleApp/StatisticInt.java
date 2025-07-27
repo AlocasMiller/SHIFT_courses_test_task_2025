@@ -5,14 +5,14 @@ import java.util.List;
 public class StatisticInt extends Statistic {
 
     @Override
-    public void printStatistic(List<String> result, String statisticType) {
+    public void printStatistic(List<String> result, StatisticType statisticType) {
         if (result.isEmpty()) {
             return;
         }
         System.out.println("\nStatistics for integers");
         System.out.println("Number of recorded items: " + result.size());
 
-        if (statisticType.equals("full")) {
+        if (statisticType.equals(StatisticType.FULL)) {
             long min = Long.MAX_VALUE;
             long max = Long.MIN_VALUE;
             double sum = 0;
